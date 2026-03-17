@@ -1,0 +1,53 @@
+name: Gerar Posts do Blog a partir de Commits
+
+on:
+  schedule:
+    # Roda todo dia às 9h (horário UTC = 6h BRT)
+    # Para mudar: https://crontab.guru
+    - cron: "0 12 * * *"
+
+  # Permite rodar manualmente pelo painel do GitHub Actions
+  workflow_dispatch:
+
+jobs:
+  generate-posts:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Necessário para commitar os posts gerados
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Gerar posts com Gemini
+        env:
+          # GH_PAT permite acessar repositórios privados.
+          # Se só tiver repos públicos, pode trocar por: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/generate_post.py
+
+      - name: Commitar e publicar posts gerados
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add _posts/ last_processed.json
+          # Só faz commit se houver mudanças
+          if git diff --staged --quiet; then
+            echo "Nenhum post novo para commitar."
+          else
+            git commit -m "blog: posts gerados automaticamente [skip ci]"
+            git push
+            echo "Posts publicados com sucesso!"
+          fi

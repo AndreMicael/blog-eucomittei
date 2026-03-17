@@ -1,0 +1,15 @@
+# Configuração do gerador de posts de blog
+
+# Idioma dos posts gerados
+language: "português"
+
+# Máximo de commits por repositório para incluir em um post
+max_commits_per_repo: 5
+
+# Lista de repositórios para monitorar
+repos:
+  - owner: Desenvolve-MT
+    name: Sistema-Contratos-Frontend
+
+  - owner: Desenvolve-MT
+    name: Sistema-Contratos-Backend
