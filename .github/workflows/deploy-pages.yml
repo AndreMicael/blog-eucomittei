@@ -1,0 +1,63 @@
+name: Deploy após edição manual de posts
+
+# Dispara SOMENTE quando posts são editados/deletados/criados
+# pelo painel admin (Sveltia CMS) — o workflow principal ignora _posts/**
+# para evitar loop. Este workflow trata as edições manuais.
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "_posts/**"
+      - "_layouts/**"
+      - "_includes/**"
+      - "assets/**"
+      - "_config.yml"
+      - "*.html"
+      - "index.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-jekyll:
+    name: Build do Jekyll
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build com Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    name: Deploy no GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build-jekyll
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy para GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
