@@ -30,10 +30,23 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
+      - name: Verificar acesso ao GitHub
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          echo "Testando acesso à API do GitHub..."
+          curl -s -o /dev/null -w "Status usuario: %{http_code}\n" \
+            -H "Authorization: token $GH_PAT" \
+            https://api.github.com/user
+          curl -s -o /dev/null -w "Status Frontend: %{http_code}\n" \
+            -H "Authorization: token $GH_PAT" \
+            https://api.github.com/repos/Desenvolve-MT/Sistema-Contratos-Frontend
+          curl -s -o /dev/null -w "Status Backend: %{http_code}\n" \
+            -H "Authorization: token $GH_PAT" \
+            https://api.github.com/repos/Desenvolve-MT/Sistema-Contratos-Backend
+
       - name: Gerar posts com Gemini
         env:
-          # GH_PAT permite acessar repositórios privados.
-          # Se só tiver repos públicos, pode trocar por: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/generate_post.py
@@ -42,7 +55,8 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add _posts/ last_processed.json
+          mkdir -p _posts
+          git add _posts/ last_processed.json 2>/dev/null || true
           # Só faz commit se houver mudanças
           if git diff --staged --quiet; then
             echo "Nenhum post novo para commitar."
