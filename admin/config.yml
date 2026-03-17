@@ -7,8 +7,7 @@ backend:
   name: github
   repo: AndreMicael/blog-devlog   # <-- seu repositório
   branch: main
-  auth_type: pkce                  # autenticação sem servidor (sem Netlify)
-  client_id: Ov23lis3fMF1CwqMoU2A
+  base_url: https://andremicael.com/oauth  # proxy OAuth hospedado no Hostgator
 
 # Onde ficam as imagens enviadas pelo painel
 media_folder: "assets/images/uploads"
