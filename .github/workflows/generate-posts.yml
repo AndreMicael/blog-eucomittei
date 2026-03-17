@@ -1,6 +1,12 @@
 name: Gerar e Publicar Posts do Blog
 
 on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "_posts/**"
+      - "last_processed.json"
+
   schedule:
     # Roda todo dia às 9h (horário UTC = 6h BRT)
     - cron: "0 12 * * *"
