@@ -8,7 +8,7 @@ backend:
   repo: AndreMicael/blog-devlog   # <-- seu repositório
   branch: main
   auth_type: pkce                  # autenticação sem servidor
-  app_id: COLE_SEU_CLIENT_ID_AQUI  # <-- Client ID do OAuth App criado no GitHub
+  app_id: Ov23lis3fMF1CwqMoU2A
 
 # Onde ficam as imagens enviadas pelo painel
 media_folder: "assets/images/uploads"
