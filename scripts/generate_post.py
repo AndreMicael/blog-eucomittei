@@ -13,7 +13,7 @@ from pathlib import Path
 
 import requests
 import yaml
-import google.generativeai as genai
+from groq import Groq
 
 
 def load_config():
@@ -131,15 +131,18 @@ DIFF DO COMMIT MAIS RECENTE (para contexto):
 Escreva o post:"""
 
 
-def generate_post_content(commits_data, language, repo_name, repo_url, gemini_api_key):
-    """Chama Gemini para gerar o post."""
-    genai.configure(api_key=gemini_api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+def generate_post_content(commits_data, language, repo_name, repo_url, groq_api_key):
+    """Chama Groq para gerar o post."""
+    client = Groq(api_key=groq_api_key)
 
     prompt = build_prompt(commits_data, language, repo_name, repo_url)
 
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1024,
+    )
+    return response.choices[0].message.content.strip()
 
 
 def slugify(text):
@@ -210,13 +213,13 @@ repo: "{repo_url}"
 
 def main():
     github_token = os.environ.get("GITHUB_TOKEN")
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
+    groq_api_key = os.environ.get("GROQ_API_KEY")
 
     if not github_token:
         print("ERRO: variável GITHUB_TOKEN não definida", file=sys.stderr)
         sys.exit(1)
-    if not gemini_api_key:
-        print("ERRO: variável GEMINI_API_KEY não definida", file=sys.stderr)
+    if not groq_api_key:
+        print("ERRO: variável GROQ_API_KEY não definida", file=sys.stderr)
         sys.exit(1)
 
     config = load_config()
@@ -263,7 +266,7 @@ def main():
             # Gera post com Gemini
             print(f"  Gerando post com Gemini...")
             content = generate_post_content(
-                commits_data, language, repo, repo_url, gemini_api_key
+                commits_data, language, repo, repo_url, groq_api_key
             )
 
             # Escreve arquivo Jekyll
