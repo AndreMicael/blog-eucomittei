@@ -1,1 +1,26 @@
-{}
+{
+  "Desenvolve-MT/Sistema-Contratos-Frontend": {
+    "last_sha": "f9c9d440004a8c183035d40d76dc407fb049637a",
+    "last_post_sha": "f9c9d440004a8c183035d40d76dc407fb049637a",
+    "processed": [
+      "f9c9d440004a8c183035d40d76dc407fb049637a",
+      "4ff3df480a5d15dc94dba44031254d200c1fb2f2",
+      "54885ac5cc4d527b2166a6b1adc389919bd17fe3",
+      "554488bc88bc014b4984bcd49cb9aa7cc493dfd1",
+      "5191af7f2eaf83242928b991f1a29420f1be925e"
+    ],
+    "processed_tags": []
+  },
+  "Desenvolve-MT/Sistema-Contratos-Backend": {
+    "last_sha": "3936c496b2107e435a960c33a100b5367716490d",
+    "last_post_sha": "3936c496b2107e435a960c33a100b5367716490d",
+    "processed": [
+      "3936c496b2107e435a960c33a100b5367716490d",
+      "f03410587ec2c268dbcb8a6346635db64c90da44",
+      "142abf5376ca8c506bdbd45d763ee010c9383525",
+      "45963c28b4f77ee0588af597eaf273ee579c6434",
+      "803156ad8b8ccf0f91b0469a9c86eb7f34603b6e"
+    ],
+    "processed_tags": []
+  }
+}
