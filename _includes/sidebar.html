@@ -2,16 +2,16 @@
 
   <!-- Busca -->
   <div class="sidebar-widget search-widget">
-    <h3 class="widget-title">🔍 Pesquisar</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> pesquisar</h3>
     <div class="search-box">
-      <input type="text" id="search-input" placeholder="Buscar posts..." autocomplete="off" />
+      <input type="text" id="search-input" placeholder="buscar posts..." autocomplete="off" />
       <ul id="search-results"></ul>
     </div>
   </div>
 
   <!-- Sobre -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">👤 Sobre</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> sobre</h3>
     <div class="about-widget">
       <p><strong>{{ site.author.name }}</strong></p>
       <p>Dev log gerado automaticamente a partir de commits reais. Cada post representa trabalho feito de verdade.</p>
@@ -20,7 +20,7 @@
 
   <!-- Categorias -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">📁 Categorias</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> categorias</h3>
     <ul class="category-list">
       {% assign categories = site.posts | map: 'categories' | join: ',' | split: ',' | uniq | sort %}
       {% for category in categories %}
@@ -37,7 +37,7 @@
 
   <!-- Tags -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">🏷️ Tags</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> tags</h3>
     <div class="tag-cloud">
       {% assign tags = site.posts | map: 'tags' | join: ',' | split: ',' | uniq | sort %}
       {% for tag in tags %}
@@ -48,34 +48,34 @@
 
   <!-- Posts Recentes -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">🕐 Posts Recentes</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> recentes</h3>
     <ul class="recent-posts">
       {% for post in site.posts limit: 5 %}
         <li>
-          <a href="{{ post.url | relative_url }}">{{ post.title | truncate: 45 }}</a>
+          <a href="{{ post.url | relative_url }}">{{ post.title | truncate: 48 }}</a>
           <span class="recent-date">{{ post.date | date: "%d/%m/%Y" }}</span>
         </li>
       {% endfor %}
     </ul>
   </div>
 
-  <!-- Arquivo por mês -->
+  <!-- Arquivo -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">📅 Arquivo</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> arquivo</h3>
     <ul class="archive-list">
-      {% assign postsByMonth = site.posts | group_by_exp: "post", "post.date | date: '%B %Y'" %}
+      {% assign postsByMonth = site.posts | group_by_exp: "post", "post.date | date: '%b/%Y'" %}
       {% for month in postsByMonth limit: 6 %}
         <li>
-          <span class="archive-month">{{ month.name }}</span>
+          <span>{{ month.name }}</span>
           <span class="count">{{ month.items.size }}</span>
         </li>
       {% endfor %}
     </ul>
   </div>
 
-  <!-- Repositórios monitorados -->
+  <!-- Repositórios -->
   <div class="sidebar-widget">
-    <h3 class="widget-title">📦 Repositórios</h3>
+    <h3 class="widget-title"><span class="wt-icon">#</span> repositórios</h3>
     <ul class="repo-list">
       {% assign repos = site.posts | map: 'repo' | uniq %}
       {% for repo in repos %}

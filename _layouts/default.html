@@ -7,20 +7,24 @@
   <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}" />
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | relative_url }}" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
 </head>
 <body>
 
   <header class="blog-header">
     <div class="header-inner">
-      <a href="{{ '/' | relative_url }}" class="blog-title-link">
-        <h1 class="blog-title">{{ site.title }}</h1>
-      </a>
-      <p class="blog-description">{{ site.description }}</p>
+      <div class="header-brand">
+        <a href="{{ '/' | relative_url }}" class="blog-title-link">
+          <h1 class="blog-title">
+            <span class="prompt">❯</span>
+            <span class="site-name">{{ site.title }}</span><span class="cursor">▌</span>
+          </h1>
+        </a>
+        <p class="blog-description">// {{ site.description }}</p>
+      </div>
       <nav class="blog-nav">
-        <a href="{{ '/' | relative_url }}">Início</a>
-        <a href="{{ '/categories/' | relative_url }}">Categorias</a>
-        <a href="{{ '/tags/' | relative_url }}">Tags</a>
+        <a href="{{ '/' | relative_url }}">~/início</a>
+        <a href="{{ '/categories/' | relative_url }}">~/categorias</a>
+        <a href="{{ '/tags/' | relative_url }}">~/tags</a>
       </nav>
     </div>
   </header>
@@ -33,7 +37,15 @@
   </div>
 
   <footer class="blog-footer">
-    <p>© {{ site.time | date: '%Y' }} <strong>{{ site.author.name }}</strong> &mdash; Dev Log gerado automaticamente por IA a partir de commits reais.</p>
+    <p>
+      <span style="color:var(--green)">❯</span>
+      © {{ site.time | date: '%Y' }}
+      <strong>{{ site.author.name }}</strong>
+      <span class="footer-sep">·</span>
+      dev log gerado por IA a partir de commits reais
+      <span class="footer-sep">·</span>
+      feito com <span class="footer-heart">♥</span>
+    </p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.10.0/dest/simple-jekyll-search.min.js"></script>
@@ -43,7 +55,7 @@
       resultsContainer: document.getElementById('search-results'),
       json: '{{ "/search.json" | relative_url }}',
       searchResultTemplate: '<li><a href="{url}"><span class="search-result-title">{title}</span><span class="search-result-date">{date}</span></a></li>',
-      noResultsText: '<li class="no-results">Nenhum resultado encontrado.</li>',
+      noResultsText: '<li class="no-results">// nenhum resultado encontrado</li>',
       limit: 8,
       fuzzy: false
     });
@@ -56,6 +68,17 @@
         document.getElementById('search-results').style.display = 'none';
       }
     });
+
+    // Marca link ativo no nav
+    (function() {
+      const path = window.location.pathname;
+      document.querySelectorAll('.blog-nav a').forEach(function(a) {
+        const href = a.getAttribute('href');
+        if (href === path || (href !== '{{ "/" | relative_url }}' && path.startsWith(href))) {
+          a.classList.add('active');
+        }
+      });
+    })();
   </script>
 
 </body>

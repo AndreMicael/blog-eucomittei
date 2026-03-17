@@ -5,22 +5,23 @@ layout: default
 <article class="post-full">
   <header class="post-header">
     <div class="post-breadcrumb">
-      <a href="{{ '/' | relative_url }}">Início</a>
+      <a href="{{ '/' | relative_url }}">~/início</a>
       {% for category in page.categories %}
-        &rsaquo; <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}">{{ category }}</a>
+        <span class="sep">/</span>
+        <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}">{{ category | downcase }}</a>
       {% endfor %}
     </div>
 
     <h1 class="post-title">{{ page.title }}</h1>
 
-    <div class="post-meta">
+    <div class="post-meta" style="margin-top:12px">
       <span class="post-date">📅 {{ page.date | date: "%d de %B de %Y" }}</span>
       {% if page.repo %}
-        <span class="post-repo">🔗 <a href="{{ page.repo }}" target="_blank">{{ page.repo | split: '/' | last }}</a></span>
+        <span>🔗 <a href="{{ page.repo }}" target="_blank">{{ page.repo | split: '/' | last }}</a></span>
       {% endif %}
     </div>
 
-    <div class="post-categories-header">
+    <div class="post-categories-header" style="margin-top:14px">
       {% for category in page.categories %}
         <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}" class="post-category">{{ category }}</a>
       {% endfor %}
@@ -33,7 +34,7 @@ layout: default
 
   <footer class="post-footer">
     <div class="post-tags-section">
-      <span class="tags-label">🏷️ Tags:</span>
+      <span class="tags-label"># tags:</span>
       {% for tag in page.tags %}
         <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="post-tag">{{ tag }}</a>
       {% endfor %}
@@ -41,13 +42,13 @@ layout: default
 
     <div class="post-nav">
       {% if page.previous.url %}
-        <a href="{{ page.previous.url | relative_url }}" class="post-nav-prev">&laquo; {{ page.previous.title | truncate: 40 }}</a>
+        <a href="{{ page.previous.url | relative_url }}" class="post-nav-prev">← {{ page.previous.title | truncate: 42 }}</a>
       {% endif %}
       {% if page.next.url %}
-        <a href="{{ page.next.url | relative_url }}" class="post-nav-next">{{ page.next.title | truncate: 40 }} &raquo;</a>
+        <a href="{{ page.next.url | relative_url }}" class="post-nav-next">{{ page.next.title | truncate: 42 }} →</a>
       {% endif %}
     </div>
 
-    <a href="{{ '/' | relative_url }}" class="back-to-home">← Voltar ao início</a>
+    <a href="{{ '/' | relative_url }}" class="back-to-home">← voltar ao início</a>
   </footer>
 </article>

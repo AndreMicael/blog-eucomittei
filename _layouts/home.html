@@ -2,44 +2,97 @@
 layout: default
 ---
 
+<div class="terminal-banner">
+  <div class="terminal-header">
+    <span class="dot dot-red"></span>
+    <span class="dot dot-yellow"></span>
+    <span class="dot dot-green"></span>
+    <span class="terminal-filename">devlog.sh</span>
+  </div>
+  <div class="terminal-body">
+    <div class="tb-line">
+      <span class="tb-prompt">$</span>
+      <span class="tb-cmd">git log <span class="tb-flag">--oneline --all</span> | ai-generate <span class="tb-flag">--blog --auto</span></span>
+    </div>
+    <div class="tb-line">
+      <span class="tb-comment">// cada post é gerado automaticamente a partir de commits reais</span>
+    </div>
+    <div class="tb-line">
+      <span class="tb-success">✓ monitorando: Sistema-Contratos-Frontend · Sistema-Contratos-Backend</span>
+    </div>
+  </div>
+</div>
+
 <div class="posts-list">
   {% if site.posts.size == 0 %}
     <div class="no-posts">
-      <p>Nenhum post ainda. O blog é atualizado automaticamente quando há novos commits nos projetos monitorados.</p>
+      <p><code>$ git log</code></p>
+      <p style="margin-top:12px">Nenhum post ainda. O blog é atualizado automaticamente quando há novos commits nos projetos monitorados.</p>
     </div>
   {% else %}
     {% for post in site.posts %}
-    <article class="post-card">
-      <div class="post-card-header">
-        <div class="post-meta-top">
-          {% for category in post.categories %}
-            <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}" class="post-category">{{ category }}</a>
-          {% endfor %}
+      {% if forloop.first %}
+      <article class="post-card post-card--featured">
+        <div class="post-card-header">
+          <div class="post-meta-top">
+            <span class="featured-badge">★ destaque</span>
+            {% for category in post.categories %}
+              <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}" class="post-category">{{ category }}</a>
+            {% endfor %}
+          </div>
+          <h2 class="post-card-title">
+            <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+          </h2>
+          <div class="post-meta">
+            <span class="post-date">📅 {{ post.date | date: "%d/%m/%Y" }}</span>
+            {% if post.repo %}
+              <span>🔗 <a href="{{ post.repo }}" target="_blank">{{ post.repo | split: '/' | last }}</a></span>
+            {% endif %}
+          </div>
         </div>
-        <h2 class="post-card-title">
-          <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
-        </h2>
-        <div class="post-meta">
-          <span class="post-date">📅 {{ post.date | date: "%d/%m/%Y" }}</span>
-          {% if post.repo %}
-            <span class="post-repo">🔗 <a href="{{ post.repo }}" target="_blank">{{ post.repo | split: '/' | last }}</a></span>
-          {% endif %}
+        <div class="post-card-body">
+          <p class="post-excerpt">{{ post.content | strip_html | truncate: 320 }}</p>
         </div>
-      </div>
-
-      <div class="post-card-body">
-        <p class="post-excerpt">{{ post.content | strip_html | truncate: 250 }}</p>
-      </div>
-
-      <div class="post-card-footer">
-        <div class="post-tags">
-          {% for tag in post.tags limit: 4 %}
-            <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="post-tag">{{ tag }}</a>
-          {% endfor %}
+        <div class="post-card-footer">
+          <div class="post-tags">
+            {% for tag in post.tags limit: 5 %}
+              <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="post-tag">{{ tag }}</a>
+            {% endfor %}
+          </div>
+          <a href="{{ post.url | relative_url }}" class="read-more">leia mais →</a>
         </div>
-        <a href="{{ post.url | relative_url }}" class="read-more">Leia mais &raquo;</a>
-      </div>
-    </article>
+      </article>
+      {% else %}
+      <article class="post-card">
+        <div class="post-card-header">
+          <div class="post-meta-top">
+            {% for category in post.categories %}
+              <a href="{{ '/categories/' | relative_url }}#{{ category | slugify }}" class="post-category">{{ category }}</a>
+            {% endfor %}
+          </div>
+          <h2 class="post-card-title">
+            <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+          </h2>
+          <div class="post-meta">
+            <span class="post-date">📅 {{ post.date | date: "%d/%m/%Y" }}</span>
+            {% if post.repo %}
+              <span>🔗 <a href="{{ post.repo }}" target="_blank">{{ post.repo | split: '/' | last }}</a></span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="post-card-body">
+          <p class="post-excerpt">{{ post.content | strip_html | truncate: 240 }}</p>
+        </div>
+        <div class="post-card-footer">
+          <div class="post-tags">
+            {% for tag in post.tags limit: 4 %}
+              <a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}" class="post-tag">{{ tag }}</a>
+            {% endfor %}
+          </div>
+          <a href="{{ post.url | relative_url }}" class="read-more">leia mais →</a>
+        </div>
+      </article>
+      {% endif %}
     {% endfor %}
   {% endif %}
 </div>
