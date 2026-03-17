@@ -1,14 +1,14 @@
 # =====================================================
-# Decap CMS — Painel Admin do Dev Log
-# Docs: https://decapcms.org/docs/github-backend/
+# Sveltia CMS — Painel Admin do Dev Log
+# Docs: https://github.com/sveltia/sveltia-cms
 # =====================================================
 
 backend:
   name: github
   repo: AndreMicael/blog-devlog   # <-- seu repositório
   branch: main
-  auth_type: pkce                  # autenticação sem servidor
-  app_id: Ov23lis3fMF1CwqMoU2A
+  auth_type: pkce                  # autenticação sem servidor (sem Netlify)
+  client_id: Ov23lis3fMF1CwqMoU2A
 
 # Onde ficam as imagens enviadas pelo painel
 media_folder: "assets/images/uploads"
