@@ -125,9 +125,9 @@ def get_commit_groups(owner, repo, last_processed_data, github_token, max_per_gr
     processed_set = set(repo_data.get("processed", []))
     processed_tags = set(repo_data.get("processed_tags", []))
 
-    # Primeira execução: processa só o commit mais recente
+    # Primeira execução: agrupa os commits mais recentes em um único post
     if not last_sha:
-        return [(commits[:1], None)]
+        return [(commits[:max_per_group], None)]
 
     # Coleta commits não processados
     unprocessed = []
