@@ -477,6 +477,40 @@ def save_to_mysql(title, slug, content, repo_name, repo_url,
             conn.close()
 
 
+def check_mysql_status():
+    """Verifica e imprime o status da conexão MySQL no início da execução."""
+    host     = os.environ.get("MYSQL_HOST")
+    user     = os.environ.get("MYSQL_USER")
+    password = os.environ.get("MYSQL_PASSWORD")
+    database = os.environ.get("MYSQL_DATABASE")
+
+    print("\n── MySQL ──────────────────────────────")
+    if not MYSQL_AVAILABLE:
+        print("  [MYSQL] ✗ biblioteca mysql-connector-python não instalada")
+        print("────────────────────────────────────────")
+        return
+
+    if not all([host, user, password, database]):
+        print("  [MYSQL] ✗ secrets não configurados (MYSQL_HOST / MYSQL_USER / MYSQL_PASSWORD / MYSQL_DATABASE)")
+        print("────────────────────────────────────────")
+        return
+
+    print(f"  [MYSQL] host     : {host}")
+    print(f"  [MYSQL] database : {database}")
+    print(f"  [MYSQL] user     : {user}")
+    try:
+        conn = get_mysql_connection()
+        if conn and conn.is_connected():
+            info = conn.get_server_info()
+            conn.close()
+            print(f"  [MYSQL] ✓ conexão OK  (servidor MySQL {info})")
+        else:
+            print("  [MYSQL] ✗ não foi possível conectar")
+    except Exception as e:
+        print(f"  [MYSQL] ✗ erro ao conectar: {e}")
+    print("────────────────────────────────────────\n")
+
+
 def main():
     github_token = os.environ.get("GITHUB_TOKEN")
     groq_api_key = os.environ.get("GROQ_API_KEY")
@@ -487,6 +521,8 @@ def main():
     if not groq_api_key:
         print("ERRO: variável GROQ_API_KEY não definida", file=sys.stderr)
         sys.exit(1)
+
+    check_mysql_status()
 
     config = load_config()
     last_processed = load_last_processed()
