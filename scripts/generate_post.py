@@ -15,6 +15,12 @@ import requests
 import yaml
 from groq import Groq
 
+try:
+    import mysql.connector
+    MYSQL_AVAILABLE = True
+except ImportError:
+    MYSQL_AVAILABLE = False
+
 
 def load_config():
     config_path = Path(__file__).parent.parent / "config.yml"
@@ -396,6 +402,81 @@ repo: "{repo_url}"
     return filename
 
 
+def get_mysql_connection():
+    """Retorna conexão MySQL se as variáveis de ambiente estiverem configuradas."""
+    if not MYSQL_AVAILABLE:
+        return None
+    host     = os.environ.get("MYSQL_HOST")
+    user     = os.environ.get("MYSQL_USER")
+    password = os.environ.get("MYSQL_PASSWORD")
+    database = os.environ.get("MYSQL_DATABASE")
+    port     = int(os.environ.get("MYSQL_PORT", "3306"))
+
+    if not all([host, user, password, database]):
+        return None  # MySQL não configurado — silenciosamente ignora
+
+    return mysql.connector.connect(
+        host=host, port=port, user=user,
+        password=password, database=database,
+        connection_timeout=10
+    )
+
+
+def save_to_mysql(title, slug, content, repo_name, repo_url,
+                  categories, tags, commit_shas, post_date):
+    """Salva o post no MySQL do Hostgator. Falhas não interrompem o fluxo principal."""
+    conn = None
+    try:
+        conn = get_mysql_connection()
+        if conn is None:
+            return  # MySQL não configurado
+
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS blog_posts (
+                id           INT AUTO_INCREMENT PRIMARY KEY,
+                slug         VARCHAR(255) UNIQUE NOT NULL,
+                title        VARCHAR(500) NOT NULL,
+                content      LONGTEXT,
+                repo_name    VARCHAR(255),
+                repo_url     VARCHAR(500),
+                categories   VARCHAR(500),
+                tags         TEXT,
+                commit_shas  TEXT,
+                post_date    DATE,
+                generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                             ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """)
+
+        cursor.execute("""
+            INSERT INTO blog_posts
+                (slug, title, content, repo_name, repo_url,
+                 categories, tags, commit_shas, post_date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                title        = VALUES(title),
+                content      = VALUES(content),
+                categories   = VALUES(categories),
+                tags         = VALUES(tags),
+                updated_at   = CURRENT_TIMESTAMP
+        """, (
+            slug, title, content, repo_name, repo_url,
+            ", ".join(categories),
+            ", ".join(tags),
+            ", ".join(commit_shas),
+            post_date
+        ))
+        conn.commit()
+        print("    ✓ Post salvo no MySQL.")
+    except Exception as e:
+        print(f"    ⚠ MySQL: {e} (post Jekyll salvo normalmente)")
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
 def main():
     github_token = os.environ.get("GITHUB_TOKEN")
     groq_api_key = os.environ.get("GROQ_API_KEY")
@@ -460,6 +541,25 @@ def main():
                 filename = write_jekyll_post(content, repo, repo_url, commits_data)
                 generated_posts.append(filename)
                 print(f"    Post criado: {filename}")
+
+                # Salva backup no MySQL (opcional — requer secrets MYSQL_*)
+                lines = content.strip().split("\n")
+                post_title = lines[0][2:].strip() if lines and lines[0].startswith("# ") else f"Atualização em {repo}"
+                body = "\n".join(lines[1:]).strip() if lines and lines[0].startswith("# ") else content
+                category, tags = detect_categories_and_tags(repo, commits_data)
+                latest_date_str = commits_data[0][0]["commit"]["author"]["date"]
+                latest_date = datetime.fromisoformat(latest_date_str.replace("Z", "+00:00"))
+                save_to_mysql(
+                    title=post_title,
+                    slug=slugify(post_title),
+                    content=body,
+                    repo_name=repo,
+                    repo_url=repo_url,
+                    categories=[category],
+                    tags=tags,
+                    commit_shas=[c["sha"][:7] for c, _, _ in commits_data],
+                    post_date=latest_date.strftime("%Y-%m-%d"),
+                )
 
                 # Marca grupo e tag como processados
                 mark_group_as_processed(repo_key, group, last_processed, tag_name=tag_name)

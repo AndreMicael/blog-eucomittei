@@ -59,8 +59,13 @@ jobs:
 
       - name: Gerar posts com Groq
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN:   ${{ secrets.GH_PAT }}
+          GROQ_API_KEY:   ${{ secrets.GROQ_API_KEY }}
+          MYSQL_HOST:     ${{ secrets.MYSQL_HOST }}
+          MYSQL_PORT:     ${{ secrets.MYSQL_PORT }}
+          MYSQL_USER:     ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
         run: python scripts/generate_post.py
 
       - name: Commitar posts gerados
