@@ -3,6 +3,9 @@ layout: default
 ---
 
 <article class="post-full">
+  {% if page.image %}
+    <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="post-cover" />
+  {% endif %}
   <header class="post-header">
     <div class="post-breadcrumb">
       <a href="{{ '/' | relative_url }}">~/início</a>

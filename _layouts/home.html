@@ -33,6 +33,7 @@ layout: default
     {% for post in site.posts %}
       {% if forloop.first %}
       <article class="post-card post-card--featured">
+        {% if post.image %}<img src="{{ post.image | relative_url }}" alt="{{ post.title }}" class="post-card-cover" />{% endif %}
         <div class="post-card-header">
           <div class="post-meta-top">
             <span class="featured-badge">★ destaque</span>
@@ -64,6 +65,7 @@ layout: default
       </article>
       {% else %}
       <article class="post-card">
+        {% if post.image %}<img src="{{ post.image | relative_url }}" alt="{{ post.title }}" class="post-card-cover" />{% endif %}
         <div class="post-card-header">
           <div class="post-meta-top">
             {% for category in post.categories %}
