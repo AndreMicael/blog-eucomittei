@@ -26,7 +26,12 @@ def load_last_processed():
     path = Path(__file__).parent.parent / "last_processed.json"
     if path.exists():
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        # Migra formato antigo {repo: "sha"} para novo {repo: {last_sha, processed: []}}
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = {"last_sha": value, "processed": [value]}
+        return data
     return {}
 
 
@@ -34,6 +39,26 @@ def save_last_processed(data):
     path = Path(__file__).parent.parent / "last_processed.json"
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def is_already_processed(repo_key, sha, last_processed):
+    """Verifica se um SHA já foi processado anteriormente."""
+    repo_data = last_processed.get(repo_key, {})
+    if isinstance(repo_data, str):
+        return repo_data == sha
+    return sha in repo_data.get("processed", [])
+
+
+def mark_as_processed(repo_key, sha, last_processed):
+    """Registra o SHA como processado, mantendo histórico dos últimos 200."""
+    if repo_key not in last_processed:
+        last_processed[repo_key] = {"last_sha": sha, "processed": []}
+    repo_data = last_processed[repo_key]
+    repo_data["last_sha"] = sha
+    if sha not in repo_data["processed"]:
+        repo_data["processed"].append(sha)
+    # Limita histórico para não crescer demais
+    repo_data["processed"] = repo_data["processed"][-200:]
 
 
 def github_get(url, github_token, params=None, accept=None):
@@ -45,8 +70,8 @@ def github_get(url, github_token, params=None, accept=None):
     return response
 
 
-def get_new_commits(owner, repo, since_sha, github_token):
-    """Retorna commits novos desde since_sha (ou o último commit se não houver estado)."""
+def get_new_commits(owner, repo, last_processed_data, github_token):
+    """Retorna commits não processados ainda para este repo."""
     url = f"https://api.github.com/repos/{owner}/{repo}/commits"
     response = github_get(url, github_token, params={"per_page": 30})
     commits = response.json()
@@ -54,15 +79,24 @@ def get_new_commits(owner, repo, since_sha, github_token):
     if not commits:
         return []
 
-    if not since_sha:
-        # Primeira execução: processa só o commit mais recente
+    repo_key = f"{owner}/{repo}"
+    repo_data = last_processed_data.get(repo_key, {})
+    last_sha = repo_data.get("last_sha") if isinstance(repo_data, dict) else repo_data
+    processed_set = set(repo_data.get("processed", [])) if isinstance(repo_data, dict) else {repo_data}
+
+    # Primeira execução: processa só o commit mais recente
+    if not last_sha:
         return commits[:1]
 
+    # Coleta commits novos (antes de encontrar o last_sha)
     new_commits = []
     for commit in commits:
-        if commit["sha"] == since_sha:
+        if commit["sha"] == last_sha:
             break
         new_commits.append(commit)
+
+    # Filtra qualquer SHA que já esteja no histórico (segurança extra)
+    new_commits = [c for c in new_commits if c["sha"] not in processed_set]
 
     return new_commits
 
@@ -306,11 +340,10 @@ def main():
         print(f"\nProcessando {repo_key}...")
 
         try:
-            since_sha = last_processed.get(repo_key)
-            new_commits = get_new_commits(owner, repo, since_sha, github_token)
+            new_commits = get_new_commits(owner, repo, last_processed, github_token)
 
             if not new_commits:
-                print(f"  Nenhum commit novo em {repo_key}")
+                print(f"  Nenhum commit novo em {repo_key} — pulando.")
                 continue
 
             # Limita para evitar posts muito longos
@@ -325,8 +358,8 @@ def main():
                 detail, diff = get_commit_details(owner, repo, sha, github_token)
                 commits_data.append((commit, detail, diff))
 
-            # Gera post com Gemini
-            print(f"  Gerando post com Gemini...")
+            # Gera post com Groq
+            print(f"  Gerando post com Groq...")
             content = generate_post_content(
                 commits_data, language, repo, repo_url, groq_api_key
             )
@@ -336,8 +369,9 @@ def main():
             generated_posts.append(filename)
             print(f"  Post criado: {filename}")
 
-            # Atualiza estado com o commit mais recente
-            last_processed[repo_key] = new_commits[0]["sha"]
+            # Registra todos os SHAs processados no histórico
+            for commit in new_commits:
+                mark_as_processed(repo_key, commit["sha"], last_processed)
 
         except requests.HTTPError as e:
             print(f"  ERRO ao acessar GitHub para {repo_key}: {e}", file=sys.stderr)
